@@ -22,24 +22,29 @@ await fs.mkdir(SPECS_DIR, { recursive: true });
 export const processVideo = async (videoPath) => {
     const videoId = uuidv4();
 
+    // 確保使用絕對路徑
+    const absoluteVideoPath = path.isAbsolute(videoPath)
+        ? videoPath
+        : path.resolve(videoPath);
+
     console.log(`\n🎬 Starting video processing: ${videoId}`);
-    console.log(`📁 Video path: ${videoPath}\n`);
+    console.log(`📁 Video path: ${absoluteVideoPath}\n`);
 
     try {
         // ===== 步驟 1: 提取影片元數據 =====
         console.log('📊 Step 1/6: Extracting video metadata...');
-        const metadata = await getVideoMetadata(videoPath);
+        const metadata = await getVideoMetadata(absoluteVideoPath);
         metadata.videoId = videoId;
         console.log(`✅ Duration: ${metadata.duration}s, Resolution: ${metadata.width}x${metadata.height}, FPS: ${metadata.fps}\n`);
 
         // ===== 步驟 2: 分鏡檢測 =====
         console.log('🎞️  Step 2/6: Detecting shot boundaries...');
-        const shots = await detectShotBoundaries(videoPath);
+        const shots = await detectShotBoundaries(absoluteVideoPath);
         console.log(`✅ Detected ${shots.length} shots\n`);
 
         // ===== 步驟 3: 提取關鍵幀 =====
         console.log('🖼️  Step 3/6: Extracting keyframes...');
-        const keyframes = await extractKeyframes(videoPath, shots, videoId);
+        const keyframes = await extractKeyframes(absoluteVideoPath, shots, videoId);
         console.log(`✅ Extracted ${keyframes.length} keyframes\n`);
 
         // ===== 步驟 4: 視覺語義分析 =====
@@ -49,7 +54,7 @@ export const processVideo = async (videoPath) => {
 
         // ===== 步驟 5: 節奏分析 =====
         console.log('🎵 Step 5/6: Analyzing rhythm and audio...');
-        const rhythm = await analyzeRhythm(videoPath, videoId, shots);
+        const rhythm = await analyzeRhythm(absoluteVideoPath, videoId, shots);
         console.log(`✅ Energy curve: ${rhythm.energy_curve}, Cut frequency: ${rhythm.cut_frequency.toFixed(2)}/s\n`);
 
         // ===== 步驟 6: 構建 Scene Spec =====
