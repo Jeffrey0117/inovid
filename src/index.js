@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import videoRouter from './routes/video.routes.js';
+import generateRouter from './routes/generate.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -33,6 +34,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes
 app.use('/api/videos', videoRouter);
+app.use('/api/generate', generateRouter);
 
 // Health check
 app.get('/health', (req, res) => {
