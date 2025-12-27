@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -177,11 +178,17 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🎬 Inovid</h1>
@@ -195,7 +202,7 @@
         </div>
 
         <input type="file" id="fileInput" accept="video/*">
-        
+
         <button id="uploadBtn" disabled>上傳並分析</button>
 
         <div class="status" id="status"></div>
@@ -301,6 +308,7 @@
         function displayResults(data) {
             const stats = data.stats;
             const sceneSpec = data.sceneSpec;
+            const veoPrompts = data.veoPrompts;
 
             // 顯示統計
             statsContainer.innerHTML = `
@@ -318,20 +326,57 @@
                         <div class="stat-label">平均鏡頭長度</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">${stats.keyframesExtracted}</div>
-                        <div class="stat-label">關鍵幀數</div>
+                        <div class="stat-value">${stats.veoPromptsGenerated || 0}</div>
+                        <div class="stat-label">Veo Prompts</div>
                     </div>
                 </div>
             `;
 
+            // 顯示 Veo Prompts（優先顯示）
+            let promptsHtml = '';
+            if (veoPrompts && veoPrompts.prompts) {
+                promptsHtml = `
+                    <div class="result" style="margin-bottom: 20px;">
+                        <h3>🎬 Veo Prompts（可直接用於生成影片）</h3>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            ${veoPrompts.prompts.map((p, i) => `
+                                <div style="background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid ${p.importance >= 8 ? '#667eea' : p.importance >= 6 ? '#48bb78' : '#cbd5e0'};">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <strong>Scene ${p.sceneIndex}</strong>
+                                        <span style="background: ${p.importance >= 8 ? '#667eea' : p.importance >= 6 ? '#48bb78' : '#cbd5e0'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.85em;">
+                                            重要性: ${p.importance}/10
+                                        </span>
+                                    </div>
+                                    <div style="color: #666; font-size: 0.9em; margin-bottom: 8px;">
+                                        時長: ${p.duration.toFixed(1)}s | 標籤: ${p.tags.join(', ')}
+                                    </div>
+                                    <div style="background: white; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.9em;">
+                                        ${p.prompt}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="margin-top: 15px; padding: 15px; background: #e6fffa; border-radius: 8px;">
+                            <strong>💡 下一步：</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>這些 prompts 已自動保存到 <code>storage/veo-prompts/</code></li>
+                                <li>可以直接複製 prompts 到 Google Veo 生成影片</li>
+                                <li>或使用 API: <code>POST /api/generate/video/${data.videoId}</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+
             // 顯示完整結果
-            resultContainer.innerHTML = `
+            resultContainer.innerHTML = promptsHtml + `
                 <div class="result">
-                    <h3>📄 Scene Spec JSON</h3>
+                    <h3>📄 Scene Spec JSON（完整分析結果）</h3>
                     <pre>${JSON.stringify(sceneSpec, null, 2)}</pre>
                 </div>
             `;
         }
     </script>
 </body>
+
 </html>
