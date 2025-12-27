@@ -1,0 +1,115 @@
+{
+    "video_id": "example-abc123",
+    "total_duration": 23.1,
+    "total_shots": 10,
+    "avg_shot_length": 2.31,
+    "cut_frequency": 0.43,
+    "overall_energy": "high_to_low",
+    "scenes": [
+        {
+            "shot_id": 1,
+            "start": 0.0,
+            "end": 2.1,
+            "duration": 2.1,
+            "type": "hook",
+            "shot_type": "close_up",
+            "subject": "human_face",
+            "text_density": "short_hook",
+            "emotion": "curiosity",
+            "motion_level": "slight_motion",
+            "recommended_motion": "zoom_in",
+            "importance": 8,
+            "is_cut_point": true,
+            "tags": [
+                "hook",
+                "fast_paced",
+                "has_text",
+                "talking_head"
+            ]
+        },
+        {
+            "shot_id": 2,
+            "start": 2.1,
+            "end": 4.8,
+            "duration": 2.7,
+            "type": "explanation",
+            "shot_type": "screen",
+            "subject": "screen_ui",
+            "text_density": "sentence",
+            "emotion": "calm",
+            "motion_level": "static",
+            "recommended_motion": "none",
+            "importance": 6,
+            "is_cut_point": false,
+            "tags": [
+                "explanation",
+                "has_text",
+                "screen_recording"
+            ]
+        },
+        {
+            "shot_id": 3,
+            "start": 4.8,
+            "end": 6.2,
+            "duration": 1.4,
+            "type": "emphasis",
+            "shot_type": "close_up",
+            "subject": "object",
+            "text_density": "none",
+            "emotion": "excitement",
+            "motion_level": "strong_motion",
+            "recommended_motion": "quick_zoom",
+            "importance": 7,
+            "is_cut_point": true,
+            "tags": [
+                "emphasis",
+                "fast_paced"
+            ]
+        },
+        {
+            "shot_id": 4,
+            "start": 6.2,
+            "end": 9.5,
+            "duration": 3.3,
+            "type": "content",
+            "shot_type": "medium",
+            "subject": "human_body",
+            "text_density": "paragraph",
+            "emotion": "explanation",
+            "motion_level": "slight_motion",
+            "recommended_motion": "subtle_zoom",
+            "importance": 5,
+            "is_cut_point": false,
+            "tags": [
+                "content",
+                "has_text"
+            ]
+        },
+        {
+            "shot_id": 5,
+            "start": 9.5,
+            "end": 11.0,
+            "duration": 1.5,
+            "type": "transition",
+            "shot_type": "broll",
+            "subject": "object",
+            "text_density": "none",
+            "emotion": "calm",
+            "motion_level": "slight_motion",
+            "recommended_motion": "slow_pan",
+            "importance": 3,
+            "is_cut_point": false,
+            "tags": [
+                "transition",
+                "fast_paced"
+            ]
+        }
+    ],
+    "metadata": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "has_audio": true
+    },
+    "generated_at": "2025-12-27T21:32:00.000Z"
+}
