@@ -20,7 +20,7 @@ export const buildSceneSpec = (videoMetadata, shots, semantics, rhythm) => {
     // 構建每個場景的規格
     const scenes = shots.map((shot, index) => {
         const semantic = semantics.find(s => s.shotId === shot.shot) || {};
-        return buildSingleSceneSpec(shot, semantic, rhythm, avgShotLength);
+        return buildSingleSceneSpec(shot, semantic, rhythm, avgShotLength, index, shots.length);
     });
 
     // 生成整體規格
@@ -48,19 +48,28 @@ export const buildSceneSpec = (videoMetadata, shots, semantics, rhythm) => {
  * @param {Object} semantic - 語義分析
  * @param {Object} rhythm - 節奏分析
  * @param {number} avgShotLength - 平均鏡頭長度
+ * @param {number} shotIndex - 場景索引
+ * @param {number} totalShots - 總場景數
  * @returns {Object} - 單個場景規格
  */
-const buildSingleSceneSpec = (shot, semantic, rhythm, avgShotLength) => {
+const buildSingleSceneSpec = (shot, semantic, rhythm, avgShotLength, shotIndex, totalShots) => {
     const duration = shot.end - shot.start;
+    const position = shotIndex / totalShots; // 0-1 之間，表示在影片中的位置
+
+    // 如果沒有 Vision API 數據，使用智能推斷
+    const hasVisionData = semantic.shot_type && !semantic.error;
+    if (!hasVisionData) {
+        semantic = inferSemanticFromContext(duration, position, shotIndex, rhythm);
+    }
 
     // 規則 1: 判斷場景類型
-    const sceneType = determineSceneType(duration, semantic, avgShotLength);
+    const sceneType = determineSceneType(duration, semantic, avgShotLength, position);
 
     // 規則 2: 推薦動作效果
-    const recommendedMotion = recommendMotion(semantic, duration, rhythm);
+    const recommendedMotion = recommendMotion(semantic, duration, rhythm, position);
 
     // 規則 3: 判斷重要性
-    const importance = calculateImportance(duration, semantic, sceneType, avgShotLength);
+    const importance = calculateImportance(duration, semantic, sceneType, avgShotLength, position);
 
     // 規則 4: 判斷是否適合剪接點
     const isCutPoint = isSuitableForCut(shot, rhythm);
@@ -81,6 +90,60 @@ const buildSingleSceneSpec = (shot, semantic, rhythm, avgShotLength) => {
         is_cut_point: isCutPoint,
         tags: generateTags(semantic, sceneType, duration)
     };
+};
+
+/**
+ * 從上下文推斷語義（當沒有 Vision API 時）
+ */
+const inferSemanticFromContext = (duration, position, shotIndex, rhythm) => {
+    const semantic = {};
+
+    // 根據時長推斷鏡頭類型
+    if (duration < 1.5) {
+        semantic.shot_type = shotIndex === 0 ? 'close_up' : 'medium'; // 第一個短鏡頭可能是特寫
+    } else if (duration > 4) {
+        semantic.shot_type = 'wide'; // 長鏡頭可能是遠景
+    } else {
+        semantic.shot_type = position < 0.3 ? 'close_up' : 'medium'; // 前30%更可能是特寫
+    }
+
+    // 根據位置推斷主體
+    if (position < 0.2) {
+        semantic.subject = 'human_face'; // 開頭更可能是人臉
+    } else if (position > 0.8) {
+        semantic.subject = 'text_only'; // 結尾可能是文字
+    } else {
+        semantic.subject = duration > 3 ? 'screen_ui' : 'object';
+    }
+
+    // 根據時長推斷字幕
+    if (duration < 1) {
+        semantic.subtitle = 'short_hook';
+    } else if (duration > 4) {
+        semantic.subtitle = 'paragraph';
+    } else {
+        semantic.subtitle = position < 0.3 ? 'short_hook' : 'sentence';
+    }
+
+    // 根據位置和節奏推斷情緒
+    if (position < 0.15) {
+        semantic.emotion = 'curiosity'; // 開頭引起好奇
+    } else if (rhythm.energy_curve === 'high_to_low') {
+        semantic.emotion = position < 0.5 ? 'excitement' : 'calm';
+    } else {
+        semantic.emotion = duration < 2 ? 'excitement' : 'explanation';
+    }
+
+    // 根據時長推斷動態
+    if (duration < 1.5) {
+        semantic.motion = 'strong_motion'; // 短鏡頭通常動態強
+    } else if (duration > 4) {
+        semantic.motion = 'static'; // 長鏡頭通常靜態
+    } else {
+        semantic.motion = 'slight_motion';
+    }
+
+    return semantic;
 };
 
 /**
