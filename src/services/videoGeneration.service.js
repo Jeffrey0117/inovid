@@ -92,6 +92,69 @@ export const buildVeoPrompt = (scene, index) => {
 };
 
 /**
+ * 從關鍵幀截圖直接生成 Veo prompt（不需要 Vision API）
+ * @param {Object} keyframe - 關鍵幀信息
+ * @param {Object} scene - 場景信息
+ * @param {number} index - 場景索引
+ * @returns {Object} - Veo prompt with image
+ */
+export const buildVeoPromptWithImage = async (keyframe, scene, index) => {
+    const fs = await import('fs/promises');
+
+    // 讀取關鍵幀圖片並轉換為 base64
+    const imageBuffer = await fs.readFile(keyframe.path);
+    const base64Image = imageBuffer.toString('base64');
+
+    // 簡單的 prompt，讓 Veo 根據圖片生成
+    const prompt = `Recreate this scene as a ${scene.duration.toFixed(1)} second video clip. Maintain the same composition, lighting, and atmosphere. Duration: ${scene.duration.toFixed(1)} seconds.`;
+
+    return {
+        sceneIndex: index,
+        shotId: scene.shot_id,
+        duration: scene.duration,
+        prompt,
+        imageBase64: base64Image,  // 包含圖片
+        imagePath: keyframe.path,
+        importance: scene.importance,
+        tags: scene.tags,
+        useImage: true  // 標記使用圖片
+    };
+};
+
+/**
+ * 從 Scene Spec 和關鍵幀生成 Veo prompts（使用圖片）
+ * @param {Object} sceneSpec - 完整的 Scene Spec JSON
+ * @param {Array} keyframes - 關鍵幀數組
+ * @returns {Promise<Object>} - Veo prompts with images
+ */
+export const generateVeoPromptsWithImages = async (sceneSpec, keyframes) => {
+    const prompts = [];
+
+    for (let i = 0; i < sceneSpec.scenes.length; i++) {
+        const scene = sceneSpec.scenes[i];
+        const keyframe = keyframes.find(k => k.shotId === scene.shot_id);
+
+        if (keyframe) {
+            const promptData = await buildVeoPromptWithImage(keyframe, scene, i + 1);
+            prompts.push(promptData);
+        }
+    }
+
+    return {
+        videoId: sceneSpec.video_id,
+        totalScenes: sceneSpec.total_shots,
+        totalDuration: sceneSpec.total_duration,
+        prompts,
+        useImages: true,  // 標記使用圖片模式
+        metadata: {
+            originalResolution: `${sceneSpec.metadata.width}x${sceneSpec.metadata.height}`,
+            originalFps: sceneSpec.metadata.fps,
+            generatedAt: new Date().toISOString()
+        }
+    };
+};
+
+/**
  * 從完整的 Scene Spec 生成所有 Veo prompts
  * @param {Object} sceneSpec - 完整的 Scene Spec JSON
  * @returns {Array} - Veo prompts 數組

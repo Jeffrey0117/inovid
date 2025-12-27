@@ -359,10 +359,17 @@
                         <div style="margin-top: 15px; padding: 15px; background: #e6fffa; border-radius: 8px;">
                             <strong>💡 下一步：</strong>
                             <ul style="margin: 10px 0; padding-left: 20px;">
-                                <li>這些 prompts 已自動保存到 <code>storage/veo-prompts/</code></li>
-                                <li>可以直接複製 prompts 到 Google Veo 生成影片</li>
-                                <li>或使用 API: <code>POST /api/generate/video/${data.videoId}</code></li>
+                                <li>✅ Prompts 已包含關鍵幀截圖（不需要 Vision API！）</li>
+                                <li>✅ 已自動保存到 <code>storage/veo-prompts/</code></li>
+                                <li>🎬 直接用截圖 + prompt 給 Veo 生成影片</li>
+                                <li>💰 省錢模式：不需要額外的 Vision API 分析</li>
+                                <li>📡 或使用 API: <code>POST /api/generate/video/${data.videoId}</code></li>
                             </ul>
+                            <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;">
+                                <strong>🖼️ 圖片模式說明：</strong><br>
+                                每個 prompt 都包含對應的關鍵幀截圖（base64），<br>
+                                Veo 會根據截圖重現相同的畫面，不需要文字描述！
+                            </div>
                         </div>
                     </div>
                 `;

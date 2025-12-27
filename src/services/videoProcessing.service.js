@@ -68,10 +68,12 @@ export const processVideo = async (videoPath) => {
         console.log(`\n✨ Processing complete!`);
         console.log(`📄 Scene spec: ${specPath}\n`);
 
-        // ===== 步驟 7: 自動生成 Veo Prompts =====
-        console.log('📝 Step 7/7: Generating Veo prompts...');
-        const { generateVeoPrompts, saveVeoPrompts } = await import('./videoGeneration.service.js');
-        const veoPrompts = generateVeoPrompts(sceneSpec);
+        // ===== 步驟 7: 自動生成 Veo Prompts（使用關鍵幀圖片）=====
+        console.log('📝 Step 7/7: Generating Veo prompts with keyframe images...');
+        const { generateVeoPromptsWithImages, saveVeoPrompts } = await import('./videoGeneration.service.js');
+
+        // 使用關鍵幀圖片生成 prompts（不需要 Vision API！）
+        const veoPrompts = await generateVeoPromptsWithImages(sceneSpec, keyframes);
 
         // 保存 prompts
         const PROMPTS_DIR = process.env.STORAGE_DIR
@@ -81,7 +83,7 @@ export const processVideo = async (videoPath) => {
         const promptsPath = path.join(PROMPTS_DIR, `${videoId}-prompts.json`);
         await saveVeoPrompts(veoPrompts, promptsPath);
 
-        console.log(`✅ Generated ${veoPrompts.prompts.length} Veo prompts\n`);
+        console.log(`✅ Generated ${veoPrompts.prompts.length} Veo prompts with images\n`);
 
         return {
             success: true,
